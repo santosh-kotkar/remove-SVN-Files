@@ -1,0 +1,74 @@
+package ReleaseSVN;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ *
+ * @author santosh
+ */
+public class ReleaseSVN {
+
+    /**
+     * @param args the command line arguments
+     */
+    private static Integer SVN_COUNT = 0;
+    private static Boolean SVN_REMOVE = false;
+    private static Boolean illegible = false;
+
+    public static void main(String[] args) {
+        // TODO code application logic here
+        File source = null;
+        Properties properties = new Properties();
+        try {
+            //Get project from properies file.
+            properties.load(new FileInputStream("/home/santosh/path.properties"));
+            source = new File(properties.getProperty("project"));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        System.out.println("_Project name--> " + source.getName());
+        System.out.println("Start finding .svn");
+        removeSVN(source);
+        System.out.println("Total .svn found--> " + SVN_COUNT);
+        //System.out.println("Do you want to remove .svn Y/N :" );  //TODO
+        SVN_REMOVE = true;
+        if (SVN_REMOVE) {
+            removeSVN(source);
+        }
+    }
+
+    public static void removeSVN(File sourceDir) {
+        File[] childDir = sourceDir.listFiles();
+        for (File sourceChild : childDir) {
+            if (sourceChild.isDirectory()) {
+                if (sourceChild.getName().equals(".svn")) {//If directory is .svn then start deleting files and folder
+                    SVN_COUNT += 1;
+                    illegible = true;
+                }
+                removeSVN(sourceChild);
+                if (sourceChild.getName().equals(".svn")) {
+                    if (SVN_REMOVE) {//Delete .svn folder
+                        sourceChild.delete();
+                    }
+                    illegible = false; //stop deleting.
+                }
+                if (illegible) { //delete all empty folders available inside .svn
+                    if (SVN_REMOVE) {
+                        sourceChild.delete();
+                    }
+                }
+
+            } else {
+                if (illegible) {
+                    if (SVN_REMOVE) {
+                        sourceChild.delete();//delete all files available innside .svn
+                    }
+                }
+            }
+        }
+
+    }
+}
